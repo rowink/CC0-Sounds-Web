@@ -1,2 +1,18 @@
+# Dependencies
+node_modules/
 
-.directory
+# Build
+dist/
+
+# Environment
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+.history
+
+# OS
+.DS_Store
+Thumbs.db

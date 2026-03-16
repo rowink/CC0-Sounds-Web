@@ -1,0 +1,118 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Free CC0 Sound Effects Library - Browse and download royalty-free audio files" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title} | CC0 Sounds</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    /* 像素风格浅色配色 */
+    --color-bg: #f5f5f0;
+    --color-bg-secondary: #ecece5;
+    --color-bg-tertiary: #e5e5dd;
+    --color-surface: #dcdcd5;
+    --color-surface-hover: #d0d0c8;
+    --color-border: #c5c5bc;
+    --color-border-light: #b0b0a5;
+    
+    /* 文本颜色 */
+    --color-text: #2a2a25;
+    --color-text-secondary: #555550;
+    --color-text-muted: #7a7a75;
+    
+    /* 橙色主色 */
+    --color-accent: #f97316;
+    --color-accent-dim: #ea580c;
+    --color-accent-glow: rgba(249, 115, 22, 0.1);
+    --color-accent-alt: #4080d0;
+    
+    /* 像素风额外色彩 */
+    --color-pixel-green: #40a040;
+    --color-pixel-yellow: #d0a030;
+    --color-pixel-blue: #3060c0;
+    --color-pixel-purple: #7040b0;
+    
+    --color-danger: #d03030;
+    
+    --font-display: 'VT323', monospace;
+    --font-pixel: 'Press Start 2P', cursive;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: var(--font-display);
+    background: var(--color-bg);
+    color: var(--color-text);
+    scroll-behavior: smooth;
+    image-rendering: pixelated;
+  }
+
+  body {
+    min-height: 100vh;
+    line-height: 1.4;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+  }
+
+  /* Scrollbar - 像素风格 */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-light);
+    border: 1px solid var(--color-border);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-muted);
+  }
+
+  /* Selection */
+  ::selection {
+    background: var(--color-accent);
+    color: #ffffff;
+  }
+</style>

@@ -1,0 +1,276 @@
+---
+import { Play, Pause, Download } from 'lucide-astro';
+
+interface Props {
+  id: string;
+  name: string;
+  src: string;
+}
+
+const { id, name, src } = Astro.props;
+---
+
+<div class="audio-player" data-id={id} data-src={src} data-name={name}>
+  <div class="filename" title={name}>{name}</div>
+  
+  <div class="player-controls">
+    <button class="play-btn" aria-label="Play">
+      <Play class="play-icon" size={14} />
+      <Pause class="pause-icon" size={14} />
+    </button>
+    
+    <div class="waveform">
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+    </div>
+    
+    <div class="time-display">
+      <span class="current-time">0:00</span>
+      <span class="time-separator">/</span>
+      <span class="duration">--:--</span>
+    </div>
+    
+    <button class="download-btn" aria-label="Download" title="Download">
+      <Download size={14} />
+    </button>
+  </div>
+</div>
+
+<style>
+  .audio-player {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    transition: all 0.15s ease;
+  }
+
+  .audio-player:hover {
+    border-color: var(--color-accent);
+  }
+
+  .audio-player.playing {
+    border-color: var(--color-accent);
+    background: var(--color-surface);
+  }
+
+  .filename {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .play-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-accent);
+    border: 1px solid var(--color-accent-dim);
+    flex-shrink: 0;
+    transition: all 0.15s;
+    color: #ffffff;
+  }
+
+  .play-btn :global(svg) {
+    width: 14px;
+    height: 14px;
+  }
+
+  .pause-icon {
+    display: none;
+  }
+
+  .playing .play-btn .play-icon {
+    display: none;
+  }
+
+  .playing .play-btn .pause-icon {
+    display: block;
+  }
+
+  .waveform {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    height: 20px;
+    display: flex;
+    align-items: center;
+  }
+
+  .progress-bar {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    background: var(--color-border);
+    cursor: pointer;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--color-accent);
+    transition: width 0.1s linear;
+  }
+
+  .progress-bar:hover .progress-fill {
+    background: var(--color-accent-dim);
+  }
+
+  .time-display {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .current-time {
+    color: var(--color-text-secondary);
+    min-width: 40px;
+  }
+
+  .time-separator {
+    color: var(--color-text-muted);
+  }
+
+  .duration {
+    min-width: 40px;
+  }
+
+  .download-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .download-btn:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .download-btn :global(svg) {
+    width: 14px;
+    height: 14px;
+  }
+  }
+
+  @media (max-width: 640px) {
+    .filename {
+      max-width: 100%;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll('.audio-player').forEach((player) => {
+    const playBtn = player.querySelector('.play-btn');
+    const progressBar = player.querySelector('.progress-bar') as HTMLElement;
+    const progressFill = player.querySelector('.progress-fill') as HTMLElement;
+    const currentTimeEl = player.querySelector('.current-time');
+    const durationEl = player.querySelector('.duration');
+    const downloadBtn = player.querySelector('.download-btn');
+    
+    const src = player.getAttribute('data-src') || '';
+    const name = player.getAttribute('data-name') || '';
+    
+    const audio = new Audio(src);
+    let isPlaying = false;
+    
+    function formatTime(seconds: number): string {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      const ms = Math.floor((seconds % 1) * 100);
+      return `${mins}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+    }
+    
+    function togglePlay() {
+      if (isPlaying) {
+        audio.pause();
+      } else {
+        // Stop any other playing audio
+        document.querySelectorAll('.audio-player.playing').forEach((p) => {
+          if (p !== player) {
+            const pAudio = p.querySelector('audio');
+            if (pAudio) {
+              pAudio.pause();
+              p.classList.remove('playing');
+            }
+          }
+        });
+        audio.play();
+      }
+    }
+    
+    audio.addEventListener('play', () => {
+      isPlaying = true;
+      player.classList.add('playing');
+    });
+    
+    audio.addEventListener('pause', () => {
+      isPlaying = false;
+      player.classList.remove('playing');
+    });
+    
+    audio.addEventListener('timeupdate', () => {
+      const progress = (audio.currentTime / audio.duration) * 100;
+      progressFill.style.width = `${progress}%`;
+      if (currentTimeEl) {
+        currentTimeEl.textContent = formatTime(audio.currentTime);
+      }
+    });
+    
+    audio.addEventListener('loadedmetadata', () => {
+      if (durationEl) {
+        durationEl.textContent = formatTime(audio.duration);
+      }
+    });
+    
+    audio.addEventListener('ended', () => {
+      isPlaying = false;
+      player.classList.remove('playing');
+      progressFill.style.width = '0%';
+      if (currentTimeEl) {
+        currentTimeEl.textContent = '0:00';
+      }
+    });
+    
+    playBtn?.addEventListener('click', togglePlay);
+    
+    progressBar?.addEventListener('click', (e) => {
+      const rect = progressBar.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      audio.currentTime = percent * audio.duration;
+    });
+    
+    downloadBtn?.addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.href = src;
+      a.download = name;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  });
+</script>
