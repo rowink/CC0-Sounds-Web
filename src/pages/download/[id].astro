@@ -132,16 +132,16 @@ function formatSize(bytes: number): string {
 			<p>
 				<strong>Note:</strong> This is a static site. To download all files at once, you can use a download manager or run:
 			</p>
-			<pre><code class="wget-code" data-collection-id={collection.id}>wget -r -np -nH --cut-dirs=1 -R "index.html*" {baseUrl}/sounds/{collection.id}/</code></pre>
+			<pre><code class="wget-code" data-collection-id={collection.id}>wget -r -np -nH --cut-dirs=1 -R "index.html*" http://localhost:4321/sounds/{collection.id}/</code></pre>
 			<p>or</p>
-			<pre><code class="curl-code" data-collection-id={collection.id}>curl -O {baseUrl}/sounds/{collection.id}/*.mp3</code></pre>
+			<pre><code class="curl-code" data-collection-id={collection.id}>curl -O http://localhost:4321/sounds/{collection.id}/*.mp3</code></pre>
 		</section>
 
 		<script is:inline>
 			const baseUrl = window.location.origin;
-			document.querySelectorAll('.wget-code, .curl-code').forEach(el => {
+			document.querySelectorAll(".wget-code, .curl-code").forEach((el) => {
 				const collectionId = el.dataset.collectionId;
-				if (el.classList.contains('wget-code')) {
+				if (el.classList.contains("wget-code")) {
 					el.textContent = `wget -r -np -nH --cut-dirs=1 -R "index.html*" ${baseUrl}/sounds/${encodeURIComponent(collectionId)}/`;
 				} else {
 					el.textContent = `curl -O ${baseUrl}/sounds/${encodeURIComponent(collectionId)}/*.mp3`;
