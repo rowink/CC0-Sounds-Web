@@ -21,12 +21,17 @@ export function getStaticPaths() {
 		// Skip files without a valid collection folder
 		if (!collectionId || !filename.match(/\.(ogg|mp3|wav)$/i)) continue;
 
+		// Build the full relative path (including subdirectories)
+		// parts = [collectionId, subfolder1, subfolder2, ..., filename]
+		const fullPath = parts.slice(1).join("/"); // Everything after collectionId
+		const src = `/sounds/${collectionId}/${fullPath}`;
+
 		if (!collectionFiles[collectionId]) {
 			collectionFiles[collectionId] = [];
 		}
 		collectionFiles[collectionId].push({
-			name: filename,
-			src: `/sounds/${collectionId}/${filename}`,
+			name: fullPath, // Show full path as name for clarity
+			src,
 		});
 	}
 
