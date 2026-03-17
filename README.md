@@ -16,6 +16,7 @@ A modern, beautiful website for browsing and playing CC0 sound effects.
 ```
 cc0-sounds-web/
 ├── public/
+│   ├── sounds                   # Audio files
 │   └── favicon.svg
 ├── src/
 │   ├── components/
@@ -70,10 +71,7 @@ The static files will be in the `dist` folder.
 
 ## Audio Folder Setup
 
-The website expects audio files to be in folders relative to the project. You can either:
-
-1. Copy or symlink your audio folders into the project
-2. Configure the audio source path in the components
+The website expects audio files to be placed in the `public/sounds` folder within the project.
 
 ### Scanning Audio Folders
 
@@ -83,26 +81,8 @@ To scan your audio folders and generate metadata:
 node scripts/scan-audio.js
 ```
 
-This will output JSON with all collections and their files.
-
-## Customization
-
-### Colors
-
-Edit CSS variables in `src/layouts/BaseLayout.astro`:
-
-```css
-:root {
-  --color-accent: #00d4aa;
-  --color-bg: #0a0a0f;
-  /* ... */
-}
-```
-
-### Adding Collections
-
-Edit `src/data/collections.ts` to add or modify collection metadata.
+This will output JSON with all collections to `data/collections.ts`.
 
 ## License
 
-All audio files are CC0 licensed. The website code is MIT licensed.
+All audio files are CC0 licensed. The website code is CC0 licensed.
