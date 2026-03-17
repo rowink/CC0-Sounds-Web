@@ -98,6 +98,17 @@ function formatSize(bytes: number): string {
 				<p class="collection-description">{collection.description}</p>
 				<p class="total-size">Total size: {formatSize(totalSize)}</p>
 			</div>
+
+			<div class="header-actions">
+				<button id="download-zip-btn" class="btn btn-primary">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+						<polyline points="7,10 12,15 17,10" />
+						<line x1="12" y1="15" x2="12" y2="3" />
+					</svg>
+					<span>Download as ZIP</span>
+				</button>
+			</div>
 		</section>
 
 		<section class="download-list">
@@ -128,26 +139,56 @@ function formatSize(bytes: number): string {
 			</ul>
 		</section>
 
-		<section class="download-notice">
-			<p>
-				<strong>Note:</strong> This is a static site. To download all files at once, you can use a download manager or run:
-			</p>
-			<pre><code class="wget-code" data-collection-id={collection.id}>wget -r -np -nH --cut-dirs=1 -R "index.html*" http://localhost:4321/sounds/{collection.id}/</code></pre>
-			<p>or</p>
-			<pre><code class="curl-code" data-collection-id={collection.id}>curl -O http://localhost:4321/sounds/{collection.id}/*.mp3</code></pre>
-		</section>
+		<script>
+			import JSZip from "jszip";
 
-		<script is:inline>
-			const baseUrl = window.location.origin;
-			document.querySelectorAll(".wget-code, .curl-code").forEach((el) => {
-				const collectionId = el.dataset.collectionId;
-				if (el.classList.contains("wget-code")) {
-					el.textContent = `wget -r -np -nH --cut-dirs=1 -R "index.html*" ${baseUrl}/sounds/${encodeURIComponent(collectionId)}/`;
-				} else {
-					el.textContent = `curl -O ${baseUrl}/sounds/${encodeURIComponent(collectionId)}/*.mp3`;
+			const files = JSON.parse(document.getElementById("audio-files-data").textContent);
+			const collectionId = document.getElementById("collection-id").textContent;
+			const btn = document.getElementById("download-zip-btn");
+			const btnText = btn.querySelector("span");
+
+			btn.addEventListener("click", async () => {
+				btnText.textContent = "Preparing...";
+				btn.disabled = true;
+
+				try {
+					const zip = new JSZip();
+					const baseUrl = window.location.origin;
+					let loaded = 0;
+					const total = files.length;
+
+					for (const file of files) {
+						const response = await fetch(baseUrl + file.src);
+						const blob = await response.blob();
+						zip.file(file.name, blob);
+						loaded++;
+						btnText.textContent = `Packing... ${Math.round((loaded / total) * 100)}%`;
+					}
+
+					btnText.textContent = "Generating ZIP...";
+					const zipBlob = await zip.generateAsync({ type: "blob" });
+
+					const url = URL.createObjectURL(zipBlob);
+					const a = document.createElement("a");
+					a.href = url;
+					a.download = `${collectionId}.zip`;
+					document.body.appendChild(a);
+					a.click();
+					document.body.removeChild(a);
+					URL.revokeObjectURL(url);
+
+					btnText.textContent = "Download as ZIP";
+				} catch (err) {
+					console.error(err);
+					btnText.textContent = "Error - Try individually";
+				} finally {
+					btn.disabled = false;
 				}
 			});
 		</script>
+
+		<span id="audio-files-data" style="display: none">{JSON.stringify(audioFiles)}</span>
+		<span id="collection-id" style="display: none">{collection.id}</span>
 	</main>
 
 	<Footer />
@@ -196,9 +237,17 @@ function formatSize(bytes: number): string {
 	}
 
 	.download-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
 		margin-bottom: 1.5rem;
 		padding-bottom: 1rem;
 		border-bottom: 1px solid var(--color-border);
+	}
+
+	.header-actions {
+		display: flex;
+		gap: 0.5rem;
 	}
 
 	.collection-description {
@@ -296,6 +345,22 @@ function formatSize(bytes: number): string {
 		background: var(--color-bg);
 		border-color: var(--color-accent);
 		color: var(--color-accent);
+	}
+
+	.btn-primary {
+		background: var(--color-accent);
+		color: #ffffff;
+		border-color: var(--color-accent-dim);
+		cursor: pointer;
+	}
+
+	.btn-primary:hover {
+		background: var(--color-accent-dim);
+	}
+
+	.btn-primary:disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
 	}
 
 	.download-notice {
