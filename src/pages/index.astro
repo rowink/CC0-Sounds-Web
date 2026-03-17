@@ -1,57 +1,55 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import CollectionCard from '../components/CollectionCard.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { Search } from 'lucide-astro';
+import BaseLayout from "../layouts/BaseLayout.astro";
+import CollectionCard from "../components/CollectionCard.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { Search } from "lucide-astro";
 
 // Scan all audio files from public/sounds/ - recursively
-const allAudioFiles = Object.entries(
-  import.meta.glob('/public/sounds/**/*.{ogg,mp3,wav}', { eager: true })
-);
+const allAudioFiles = Object.entries(import.meta.glob("/public/sounds/**/*.{ogg,mp3,wav}", { eager: true }));
 
 // Build a map of collection ID -> file count and files
 interface AudioFile {
-  name: string;
-  src: string;
+	name: string;
+	src: string;
 }
 
 interface CollectionData {
-  id: string;
-  name: string;
-  count: number;
-  description: string;
+	id: string;
+	name: string;
+	count: number;
+	description: string;
 }
 
 const collectionsMap: Record<string, CollectionData> = {};
 const allAudioFilesList: AudioFile[] = [];
 
 for (const [path] of allAudioFiles) {
-  // Path format: /public/sounds/{collection-id}/{subfolder/}filename.ext
-  const parts = path.replace('/public/sounds/', '').split('/');
-  if (parts.length >= 1) {
-    const collectionId = parts[0];
-    const filename = parts[parts.length - 1];
-    
-    if (!filename.match(/\.(ogg|mp3|wav)$/i)) continue;
-    
-    // Add to all files list for search
-    allAudioFilesList.push({
-      name: filename.replace(/\.(ogg|mp3|wav)$/i, ''),
-      src: `/sounds/${collectionId}/${filename}`,
-    });
-    
-    if (!collectionsMap[collectionId]) {
-      collectionsMap[collectionId] = {
-        id: collectionId,
-        name: collectionId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-        count: 0,
-        description: 'Sound effects collection',
-      };
-    }
-    
-    collectionsMap[collectionId].count++;
-  }
+	// Path format: /public/sounds/{collection-id}/{subfolder/}filename.ext
+	const parts = path.replace("/public/sounds/", "").split("/");
+	if (parts.length >= 1) {
+		const collectionId = parts[0];
+		const filename = parts[parts.length - 1];
+
+		if (!filename.match(/\.(ogg|mp3|wav)$/i)) continue;
+
+		// Add to all files list for search
+		allAudioFilesList.push({
+			name: filename.replace(/\.(ogg|mp3|wav)$/i, ""),
+			src: `/sounds/${collectionId}/${filename}`,
+		});
+
+		if (!collectionsMap[collectionId]) {
+			collectionsMap[collectionId] = {
+				id: collectionId,
+				name: collectionId.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+				count: 0,
+				description: "Sound effects collection",
+			};
+		}
+
+		collectionsMap[collectionId].count++;
+	}
 }
 
 const collections = Object.values(collectionsMap).sort((a, b) => a.name.localeCompare(b.name));
@@ -62,84 +60,77 @@ const audioFilesJson = JSON.stringify(allAudioFilesList.slice(0, 500)); // Limit
 ---
 
 <BaseLayout title="Home">
-  <Header />
-  
-  <main>
-    <section class="hero">
-      <div class="hero-content">
-        <h1 class="hero-title">CC0 SOUNDS</h1>
-        <p class="hero-subtitle">Royalty-free sound effects for your next project</p>
-        
-        <div class="search-box">
-          <Search size={18} />
-          <input 
-            type="text" 
-            id="global-search" 
-            placeholder="Search sounds..."
-            autocomplete="off"
-          />
-        </div>
-        
-        <div class="hero-stats">
-          <div class="stat">
-            <span class="stat-value">{collections.length}</span>
-            <span class="stat-label">Collections</span>
-          </div>
-          <div class="stat">
-            <span class="stat-value">{totalSounds}</span>
-            <span class="stat-label">Sound Files</span>
-          </div>
-          <div class="stat">
-            <span class="stat-value">100%</span>
-            <span class="stat-label">Free to Use</span>
-          </div>
-        </div>
-      </div>
-    </section>
+	<Header />
 
-    <section class="collections">
-      <div class="section-header">
-        <h2 class="section-title">Sound Collections</h2>
-        <p class="section-subtitle">Browse our curated collection of CC0 sound effects</p>
-      </div>
-      
-      <div class="collection-grid" id="collection-grid">
-        {collections.map((collection) => (
-          <CollectionCard collection={collection} />
-        ))}
-      </div>
-      
-      <div class="search-results" id="search-results" style="display: none;">
-        <div class="search-results-header">
-          <h3>Search Results</h3>
-          <span id="search-results-count"></span>
-        </div>
-        <div class="player-list" id="search-results-list"></div>
-      </div>
-    </section>
-  </main>
+	<main>
+		<section class="hero">
+			<div class="hero-content">
+				<h1 class="hero-title">CC0 SOUNDS</h1>
+				<p class="hero-subtitle">Royalty-free sound effects for your next project</p>
 
-  <Footer />
+				<div class="search-box">
+					<Search size={18} />
+					<input type="text" id="global-search" placeholder="Search sounds..." autocomplete="off" />
+				</div>
+
+				<div class="hero-stats">
+					<div class="stat">
+						<span class="stat-value">{collections.length}</span>
+						<span class="stat-label">Collections</span>
+					</div>
+					<div class="stat">
+						<span class="stat-value">{totalSounds}</span>
+						<span class="stat-label">Sound Files</span>
+					</div>
+					<div class="stat">
+						<span class="stat-value">100%</span>
+						<span class="stat-label">Free to Use</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="collections">
+			<div class="section-header">
+				<h2 class="section-title">Sound Collections</h2>
+				<p class="section-subtitle">Browse our curated collection of CC0 sound effects</p>
+			</div>
+
+			<div class="collection-grid" id="collection-grid">
+				{collections.map((collection) => <CollectionCard collection={collection} />)}
+			</div>
+
+			<div class="search-results" id="search-results" style="display: none;">
+				<div class="search-results-header">
+					<h3>Search Results</h3>
+					<span id="search-results-count"></span>
+				</div>
+				<div class="player-list" id="search-results-list"></div>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
 </BaseLayout>
 
 <script define:vars={{ audioFilesJson }}>
-  const audioFiles = JSON.parse(audioFilesJson);
-  const searchInput = document.getElementById('global-search');
-  const collectionGrid = document.getElementById('collection-grid');
-  const searchResults = document.getElementById('search-results');
-  const searchResultsList = document.getElementById('search-results-list');
-  const searchResultsCount = document.getElementById('search-results-count');
-  
-  let currentAudio = null;
-  
-  function createAudioPlayer(file, index) {
-    const div = document.createElement('div');
-    div.className = 'audio-player';
-    div.dataset.id = 'search-' + index;
-    div.dataset.src = file.src;
-    div.dataset.name = file.name;
-    
-    div.innerHTML = `
+	const audioFiles = JSON.parse(audioFilesJson);
+	const searchInput = document.getElementById("global-search");
+	const collectionGrid = document.getElementById("collection-grid");
+	const searchResults = document.getElementById("search-results");
+	const searchResultsList = document.getElementById("search-results-list");
+	const searchResultsCount = document.getElementById("search-results-count");
+
+	let currentAudio = null;
+
+	function createAudioPlayer(file, index) {
+		const div = document.createElement("div");
+		div.className = "audio-player";
+		div.dataset.id = "search-" + index;
+		div.dataset.src = file.src;
+		div.dataset.name = file.name;
+
+		div.innerHTML = `
       <div class="filename">${file.name}</div>
       <div class="player-controls">
         <button class="play-btn" aria-label="Play">
@@ -170,471 +161,469 @@ const audioFilesJson = JSON.stringify(allAudioFilesList.slice(0, 500)); // Limit
         </button>
       </div>
     `;
-    
-    return div;
-  }
-  
-  function initAudioPlayer(player) {
-    const playBtn = player.querySelector('.play-btn');
-    const progressBar = player.querySelector('.progress-bar');
-    const progressFill = player.querySelector('.progress-fill');
-    const currentTimeEl = player.querySelector('.current-time');
-    const durationEl = player.querySelector('.duration');
-    const downloadBtn = player.querySelector('.download-btn');
-    
-    const src = player.dataset.src;
-    const name = player.dataset.name;
-    
-    const audio = new Audio(src);
-    let isPlaying = false;
-    
-    function formatTime(seconds) {
-      if (!seconds || isNaN(seconds)) return '0:00';
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-    
-    function togglePlay() {
-      if (isPlaying) {
-        audio.pause();
-      } else {
-        // Stop any other playing audio
-        document.querySelectorAll('.audio-player.playing').forEach((p) => {
-          if (p !== player) {
-            const pAudio = p.querySelector('audio') || p._audio;
-            if (pAudio) {
-              pAudio.pause();
-              p.classList.remove('playing');
-            }
-          }
-        });
-        audio.play();
-      }
-    }
-    
-    audio.addEventListener('play', () => {
-      isPlaying = true;
-      player.classList.add('playing');
-    });
-    
-    audio.addEventListener('pause', () => {
-      isPlaying = false;
-      player.classList.remove('playing');
-    });
-    
-    audio.addEventListener('timeupdate', () => {
-      const progress = (audio.currentTime / audio.duration) * 100;
-      progressFill.style.width = `${progress}%`;
-      if (currentTimeEl) {
-        currentTimeEl.textContent = formatTime(audio.currentTime);
-      }
-    });
-    
-    audio.addEventListener('loadedmetadata', () => {
-      if (durationEl) {
-        durationEl.textContent = formatTime(audio.duration);
-      }
-    });
-    
-    audio.addEventListener('ended', () => {
-      isPlaying = false;
-      player.classList.remove('playing');
-      progressFill.style.width = '0%';
-      if (currentTimeEl) {
-        currentTimeEl.textContent = '0:00';
-      }
-    });
-    
-    player._audio = audio;
-    
-    playBtn?.addEventListener('click', togglePlay);
-    
-    progressBar?.addEventListener('click', (e) => {
-      const rect = progressBar.getBoundingClientRect();
-      const percent = (e.clientX - rect.left) / rect.width;
-      audio.currentTime = percent * audio.duration;
-    });
-    
-    downloadBtn?.addEventListener('click', () => {
-      const a = document.createElement('a');
-      a.href = src;
-      a.download = name;
-      a.target = '_blank';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    });
-  }
-  
-  function performSearch(query) {
-    if (!query.trim()) {
-      collectionGrid.style.display = 'grid';
-      searchResults.style.display = 'none';
-      return;
-    }
-    
-    const lowerQuery = query.toLowerCase();
-    const results = audioFiles.filter(file => 
-      file.name.toLowerCase().includes(lowerQuery)
-    ).slice(0, 50);
-    
-    if (results.length === 0) {
-      searchResultsList.innerHTML = '<p class="no-results">No sounds found</p>';
-      searchResultsCount.textContent = '0 results';
-    } else {
-      searchResultsCount.textContent = `${results.length} results`;
-      searchResultsList.innerHTML = '';
-      results.forEach((file, index) => {
-        const player = createAudioPlayer(file, index);
-        searchResultsList.appendChild(player);
-        initAudioPlayer(player);
-      });
-    }
-    
-    collectionGrid.style.display = 'none';
-    searchResults.style.display = 'block';
-  }
-  
-  searchInput?.addEventListener('input', (e) => {
-    performSearch(e.target.value);
-  });
+
+		return div;
+	}
+
+	function initAudioPlayer(player) {
+		const playBtn = player.querySelector(".play-btn");
+		const progressBar = player.querySelector(".progress-bar");
+		const progressFill = player.querySelector(".progress-fill");
+		const currentTimeEl = player.querySelector(".current-time");
+		const durationEl = player.querySelector(".duration");
+		const downloadBtn = player.querySelector(".download-btn");
+
+		const src = player.dataset.src;
+		const name = player.dataset.name;
+
+		const audio = new Audio(src);
+		let isPlaying = false;
+
+		function formatTime(seconds) {
+			if (!seconds || isNaN(seconds)) return "0:00";
+			const mins = Math.floor(seconds / 60);
+			const secs = Math.floor(seconds % 60);
+			return `${mins}:${secs.toString().padStart(2, "0")}`;
+		}
+
+		function togglePlay() {
+			if (isPlaying) {
+				audio.pause();
+			} else {
+				// Stop any other playing audio
+				document.querySelectorAll(".audio-player.playing").forEach((p) => {
+					if (p !== player) {
+						const pAudio = p.querySelector("audio") || p._audio;
+						if (pAudio) {
+							pAudio.pause();
+							p.classList.remove("playing");
+						}
+					}
+				});
+				audio.play();
+			}
+		}
+
+		audio.addEventListener("play", () => {
+			isPlaying = true;
+			player.classList.add("playing");
+		});
+
+		audio.addEventListener("pause", () => {
+			isPlaying = false;
+			player.classList.remove("playing");
+		});
+
+		audio.addEventListener("timeupdate", () => {
+			const progress = (audio.currentTime / audio.duration) * 100;
+			progressFill.style.width = `${progress}%`;
+			if (currentTimeEl) {
+				currentTimeEl.textContent = formatTime(audio.currentTime);
+			}
+		});
+
+		audio.addEventListener("loadedmetadata", () => {
+			if (durationEl) {
+				durationEl.textContent = formatTime(audio.duration);
+			}
+		});
+
+		audio.addEventListener("ended", () => {
+			isPlaying = false;
+			player.classList.remove("playing");
+			progressFill.style.width = "0%";
+			if (currentTimeEl) {
+				currentTimeEl.textContent = "0:00";
+			}
+		});
+
+		player._audio = audio;
+
+		playBtn?.addEventListener("click", togglePlay);
+
+		progressBar?.addEventListener("click", (e) => {
+			const rect = progressBar.getBoundingClientRect();
+			const percent = (e.clientX - rect.left) / rect.width;
+			audio.currentTime = percent * audio.duration;
+		});
+
+		downloadBtn?.addEventListener("click", () => {
+			const a = document.createElement("a");
+			a.href = src;
+			a.download = name;
+			a.target = "_blank";
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+		});
+	}
+
+	function performSearch(query) {
+		if (!query.trim()) {
+			collectionGrid.style.display = "grid";
+			searchResults.style.display = "none";
+			return;
+		}
+
+		const lowerQuery = query.toLowerCase();
+		const results = audioFiles.filter((file) => file.name.toLowerCase().includes(lowerQuery)).slice(0, 50);
+
+		if (results.length === 0) {
+			searchResultsList.innerHTML = '<p class="no-results">No sounds found</p>';
+			searchResultsCount.textContent = "0 results";
+		} else {
+			searchResultsCount.textContent = `${results.length} results`;
+			searchResultsList.innerHTML = "";
+			results.forEach((file, index) => {
+				const player = createAudioPlayer(file, index);
+				searchResultsList.appendChild(player);
+				initAudioPlayer(player);
+			});
+		}
+
+		collectionGrid.style.display = "none";
+		searchResults.style.display = "block";
+	}
+
+	searchInput?.addEventListener("input", (e) => {
+		performSearch(e.target.value);
+	});
 </script>
 
 <style>
-  main {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 1.5rem 4rem;
-  }
+	main {
+		max-width: 1400px;
+		margin: 0 auto;
+		padding: 0 1.5rem 4rem;
+	}
 
-  .hero {
-    position: relative;
-    text-align: center;
-    padding: 2rem 0 1.5rem;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid var(--color-border);
-  }
+	.hero {
+		position: relative;
+		text-align: center;
+		padding: 2rem 0 1.5rem;
+		margin-bottom: 1rem;
+		border-bottom: 1px solid var(--color-border);
+	}
 
-  .hero-content {
-    position: relative;
-    z-index: 1;
-  }
+	.hero-content {
+		position: relative;
+		z-index: 1;
+	}
 
-  .hero-title {
-    font-family: var(--font-display);
-    font-size: clamp(1.5rem, 4vw, 2rem);
-    color: var(--color-accent);
-    margin-bottom: 0.375rem;
-    font-weight: 600;
-  }
+	.hero-title {
+		font-family: var(--font-display);
+		font-size: clamp(1.5rem, 4vw, 2rem);
+		color: var(--color-accent);
+		margin-bottom: 0.375rem;
+		font-weight: 600;
+	}
 
-  .hero-subtitle {
-    font-family: var(--font-display);
-    font-size: 1.125rem;
-    color: var(--color-text-muted);
-    margin-bottom: 1.5rem;
-  }
+	.hero-subtitle {
+		font-family: var(--font-display);
+		font-size: 1.125rem;
+		color: var(--color-text-muted);
+		margin-bottom: 1.5rem;
+	}
 
-  .search-box {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    max-width: 400px;
-    margin: 0 auto 1.5rem;
-    padding: 0.625rem 1rem;
-    background: var(--color-bg-tertiary);
-    border: 1px solid var(--color-border);
-    color: var(--color-text-muted);
-  }
+	.search-box {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		max-width: 400px;
+		margin: 0 auto 1.5rem;
+		padding: 0.625rem 1rem;
+		background: var(--color-bg-tertiary);
+		border: 1px solid var(--color-border);
+		color: var(--color-text-muted);
+	}
 
-  .search-box:focus-within {
-    border-color: var(--color-accent);
-  }
+	.search-box:focus-within {
+		border-color: var(--color-accent);
+	}
 
-  .search-box input {
-    flex: 1;
-    border: none;
-    background: none;
-    font-size: 1rem;
-    color: var(--color-text);
-    outline: none;
-    font-family: var(--font-display);
-  }
+	.search-box input {
+		flex: 1;
+		border: none;
+		background: none;
+		font-size: 1rem;
+		color: var(--color-text);
+		outline: none;
+		font-family: var(--font-display);
+	}
 
-  .search-box input::placeholder {
-    color: var(--color-text-muted);
-  }
+	.search-box input::placeholder {
+		color: var(--color-text-muted);
+	}
 
-  .hero-stats {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-  }
+	.hero-stats {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 1.5rem;
+		flex-wrap: wrap;
+	}
 
-  .stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.125rem;
-    padding: 0.5rem 1rem;
-    background: var(--color-bg-tertiary);
-    border: 1px solid var(--color-border);
-  }
+	.stat {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.125rem;
+		padding: 0.5rem 1rem;
+		background: var(--color-bg-tertiary);
+		border: 1px solid var(--color-border);
+	}
 
-  .stat-value {
-    font-family: var(--font-display);
-    font-size: 1.25rem;
-    color: var(--color-text);
-    font-weight: 600;
-  }
+	.stat-value {
+		font-family: var(--font-display);
+		font-size: 1.25rem;
+		color: var(--color-text);
+		font-weight: 600;
+	}
 
-  .stat-label {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    color: var(--color-text-muted);
-  }
+	.stat-label {
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		color: var(--color-text-muted);
+	}
 
-  .stat-divider {
-    display: none;
-  }
+	.stat-divider {
+		display: none;
+	}
 
-  .hero-glow {
-    display: none;
-  }
+	.hero-glow {
+		display: none;
+	}
 
-  .collections {
-    padding-top: 1.5rem;
-  }
+	.collections {
+		padding-top: 1.5rem;
+	}
 
-  .section-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
+	.section-header {
+		text-align: center;
+		margin-bottom: 1.5rem;
+	}
 
-  .section-title {
-    font-family: var(--font-display);
-    font-size: 1.25rem;
-    color: var(--color-text);
-    margin-bottom: 0.25rem;
-    font-weight: 500;
-  }
+	.section-title {
+		font-family: var(--font-display);
+		font-size: 1.25rem;
+		color: var(--color-text);
+		margin-bottom: 0.25rem;
+		font-weight: 500;
+	}
 
-  .section-subtitle {
-    color: var(--color-text-muted);
-    font-size: 0.9375rem;
-  }
+	.section-subtitle {
+		color: var(--color-text-muted);
+		font-size: 0.9375rem;
+	}
 
-  .collection-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 0.75rem;
-  }
+	.collection-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: 0.75rem;
+	}
 
-  .search-results {
-    margin-top: 1rem;
-  }
+	.search-results {
+		margin-top: 1rem;
+	}
 
-  .search-results-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--color-border);
-  }
+	.search-results-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1rem;
+		padding-bottom: 0.75rem;
+		border-bottom: 1px solid var(--color-border);
+	}
 
-  .search-results-header h3 {
-    font-family: var(--font-display);
-    font-size: 1.125rem;
-    color: var(--color-text);
-    font-weight: 500;
-  }
+	.search-results-header h3 {
+		font-family: var(--font-display);
+		font-size: 1.125rem;
+		color: var(--color-text);
+		font-weight: 500;
+	}
 
-  #search-results-count {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-  }
+	#search-results-count {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
 
-  .player-list,
-  :global(.player-list) {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-  }
+	.player-list,
+	:global(.player-list) {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 0.5rem;
+	}
 
-  .audio-player,
-  :global(.audio-player) {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.5rem 0.75rem;
-    background: var(--color-bg-tertiary);
-    border: 1px solid var(--color-border);
-    transition: all 0.15s ease;
-  }
+	.audio-player,
+	:global(.audio-player) {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		padding: 0.5rem 0.75rem;
+		background: var(--color-bg-tertiary);
+		border: 1px solid var(--color-border);
+		transition: all 0.15s ease;
+	}
 
-  :global(.audio-player:hover) {
-    border-color: var(--color-accent);
-  }
+	:global(.audio-player:hover) {
+		border-color: var(--color-accent);
+	}
 
-  :global(.audio-player.playing) {
-    border-color: var(--color-accent);
-    background: var(--color-surface);
-  }
+	:global(.audio-player.playing) {
+		border-color: var(--color-accent);
+		background: var(--color-surface);
+	}
 
-  :global(.audio-player .filename) {
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    color: var(--color-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+	:global(.audio-player .filename) {
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-text);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 
-  :global(.audio-player .player-controls) {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+	:global(.audio-player .player-controls) {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
 
-  :global(.audio-player .play-btn) {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-accent);
-    border: 1px solid var(--color-accent-dim);
-    flex-shrink: 0;
-    transition: all 0.15s;
-    color: #ffffff;
-  }
+	:global(.audio-player .play-btn) {
+		width: 28px;
+		height: 28px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--color-accent);
+		border: 1px solid var(--color-accent-dim);
+		flex-shrink: 0;
+		transition: all 0.15s;
+		color: #ffffff;
+	}
 
-  :global(.audio-player .play-btn svg) {
-    width: 14px;
-    height: 14px;
-  }
+	:global(.audio-player .play-btn svg) {
+		width: 14px;
+		height: 14px;
+	}
 
-  :global(.audio-player .pause-icon) {
-    display: none;
-  }
+	:global(.audio-player .pause-icon) {
+		display: none;
+	}
 
-  :global(.audio-player.playing .play-btn .play-icon) {
-    display: none;
-  }
+	:global(.audio-player.playing .play-btn .play-icon) {
+		display: none;
+	}
 
-  :global(.audio-player.playing .play-btn .pause-icon) {
-    display: block;
-  }
+	:global(.audio-player.playing .play-btn .pause-icon) {
+		display: block;
+	}
 
-  :global(.audio-player .waveform) {
-    flex: 1;
-    min-width: 0;
-    position: relative;
-    height: 20px;
-    display: flex;
-    align-items: center;
-  }
+	:global(.audio-player .waveform) {
+		flex: 1;
+		min-width: 0;
+		position: relative;
+		height: 20px;
+		display: flex;
+		align-items: center;
+	}
 
-  :global(.audio-player .progress-bar) {
-    position: relative;
-    width: 100%;
-    height: 6px;
-    background: var(--color-border);
-    cursor: pointer;
-  }
+	:global(.audio-player .progress-bar) {
+		position: relative;
+		width: 100%;
+		height: 6px;
+		background: var(--color-border);
+		cursor: pointer;
+	}
 
-  :global(.audio-player .progress-fill) {
-    height: 100%;
-    width: 0%;
-    background: var(--color-accent);
-    transition: width 0.1s linear;
-  }
+	:global(.audio-player .progress-fill) {
+		height: 100%;
+		width: 0%;
+		background: var(--color-accent);
+		transition: width 0.1s linear;
+	}
 
-  :global(.audio-player .time-display) {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    color: var(--color-text-muted);
-    display: flex;
-    gap: 0.25rem;
-    flex-shrink: 0;
-  }
+	:global(.audio-player .time-display) {
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		color: var(--color-text-muted);
+		display: flex;
+		gap: 0.25rem;
+		flex-shrink: 0;
+	}
 
-  :global(.audio-player .current-time) {
-    color: var(--color-text-secondary);
-    min-width: 40px;
-  }
+	:global(.audio-player .current-time) {
+		color: var(--color-text-secondary);
+		min-width: 40px;
+	}
 
-  :global(.audio-player .duration) {
-    min-width: 40px;
-  }
+	:global(.audio-player .duration) {
+		min-width: 40px;
+	}
 
-  :global(.audio-player .download-btn) {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-muted);
-    border: 1px solid transparent;
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
+	:global(.audio-player .download-btn) {
+		width: 28px;
+		height: 28px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--color-text-muted);
+		border: 1px solid transparent;
+		transition: all 0.15s;
+		flex-shrink: 0;
+	}
 
-  :global(.audio-player .download-btn:hover) {
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-  }
+	:global(.audio-player .download-btn:hover) {
+		color: var(--color-accent);
+		border-color: var(--color-accent);
+	}
 
-  :global(.audio-player .download-btn svg) {
-    width: 14px;
-    height: 14px;
-  }
+	:global(.audio-player .download-btn svg) {
+		width: 14px;
+		height: 14px;
+	}
 
-  .no-results {
-    text-align: center;
-    padding: 2rem;
-    color: var(--color-text-muted);
-    font-size: 0.9375rem;
-  }
+	.no-results {
+		text-align: center;
+		padding: 2rem;
+		color: var(--color-text-muted);
+		font-size: 0.9375rem;
+	}
 
-  @media (max-width: 768px) {
-    .player-list {
-      grid-template-columns: 1fr;
-    }
-  }
+	@media (max-width: 768px) {
+		.player-list {
+			grid-template-columns: 1fr;
+		}
+	}
 
-  .search-result-item:hover {
-    border-color: var(--color-accent);
-    background: var(--color-surface);
-  }
+	.search-result-item:hover {
+		border-color: var(--color-accent);
+		background: var(--color-surface);
+	}
 
-  .no-results {
-    text-align: center;
-    padding: 2rem;
-    color: var(--color-text-muted);
-    font-size: 0.9375rem;
-  }
+	.no-results {
+		text-align: center;
+		padding: 2rem;
+		color: var(--color-text-muted);
+		font-size: 0.9375rem;
+	}
 
-  @media (max-width: 640px) {
-    .hero {
-      padding: 1.5rem 0 1rem;
-    }
+	@media (max-width: 640px) {
+		.hero {
+			padding: 1.5rem 0 1rem;
+		}
 
-    .hero-stats {
-      gap: 0.75rem;
-    }
+		.hero-stats {
+			gap: 0.75rem;
+		}
 
-    .stat {
-      padding: 0.375rem 0.75rem;
-    }
+		.stat {
+			padding: 0.375rem 0.75rem;
+		}
 
-    .collection-grid {
-      grid-template-columns: 1fr;
-    }
-  }
+		.collection-grid {
+			grid-template-columns: 1fr;
+		}
+	}
 </style>

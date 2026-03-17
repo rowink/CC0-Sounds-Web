@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://cc0sounds.com',
+  site: 'https://cc0-sounds-web.netlify.app',
   srcDir: './src',
   outDir: './dist',
   publicDir: './public',
