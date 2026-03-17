@@ -1,0 +1,340 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import fs from "node:fs";
+import path from "node:path";
+
+export function getStaticPaths() {
+	// Scan all audio files from public/sounds/
+	const allAudioFiles = Object.entries(import.meta.glob("/public/sounds/**/*.{ogg,mp3,wav}", { eager: true }));
+
+	// Build a map of collection ID -> audio files
+	const collectionFiles: Record<string, { name: string; src: string; size: number }[]> = {};
+
+	for (const [importPath] of allAudioFiles) {
+		// Path format: /public/sounds/{collection-id}/{subfolder/}filename.ext
+		const parts = importPath.replace("/public/sounds/", "").split("/");
+		const collectionId = parts[0];
+		const filename = parts[parts.length - 1];
+
+		// Skip files without a valid collection folder
+		if (!collectionId || !filename.match(/\.(ogg|mp3|wav)$/i)) continue;
+
+		// Build the full relative path (including subdirectories)
+		const fullPath = parts.slice(1).join("/");
+		const src = `/sounds/${collectionId}/${fullPath}`;
+
+		// Get file size from the actual file
+		const filePath = path.join("public", "sounds", collectionId, fullPath);
+		let size = 0;
+		try {
+			const stats = fs.statSync(filePath);
+			size = stats.size;
+		} catch {
+			size = 0;
+		}
+
+		if (!collectionFiles[collectionId]) {
+			collectionFiles[collectionId] = [];
+		}
+		collectionFiles[collectionId].push({
+			name: fullPath,
+			src,
+			size,
+		});
+	}
+
+	// Sort files by name
+	for (const id of Object.keys(collectionFiles)) {
+		collectionFiles[id].sort((a, b) => a.name.localeCompare(b.name));
+	}
+
+	// Generate paths for all collections that have audio files
+	return Object.entries(collectionFiles).map(([id, files]) => ({
+		params: { id },
+		props: {
+			collection: {
+				id,
+				name: id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+				description: `${files.length} sound files`,
+			},
+			audioFiles: files,
+		},
+	}));
+}
+
+const { collection, audioFiles } = Astro.props;
+
+// Calculate total size
+const totalSize = audioFiles.reduce((sum, file) => sum + file.size, 0);
+
+// Format file size
+function formatSize(bytes: number): string {
+	if (bytes === 0) return "Unknown";
+	const k = 1024;
+	const sizes = ["B", "KB", "MB", "GB"];
+	const i = Math.floor(Math.log(bytes) / Math.log(k));
+	return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+}
+---
+
+<BaseLayout title={`Download ${collection.name}`}>
+	<Header />
+
+	<main>
+		<h1 class="page-title">Download {collection.name}</h1>
+
+		<nav class="breadcrumb">
+			<a href="/">Collections</a>
+			<span class="separator">/</span>
+			<a href={`/collection/${collection.id}`}>{collection.name}</a>
+			<span class="separator">/</span>
+			<span class="current">Download</span>
+		</nav>
+
+		<section class="download-header">
+			<div class="header-content">
+				<p class="collection-description">{collection.description}</p>
+				<p class="total-size">Total size: {formatSize(totalSize)}</p>
+			</div>
+		</section>
+
+		<section class="download-list">
+			<div class="list-header">
+				<h2 class="list-title">Files</h2>
+				<span class="list-count">{audioFiles.length} files</span>
+			</div>
+
+			<ul class="file-list">
+				{
+					audioFiles.map((file) => (
+						<li class="file-item">
+							<div class="file-info">
+								<span class="file-name">{file.name}</span>
+								<span class="file-size">{formatSize(file.size)}</span>
+							</div>
+							<a href={file.src} class="btn btn-secondary" download>
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+									<polyline points="7,10 12,15 17,10" />
+									<line x1="12" y1="15" x2="12" y2="3" />
+								</svg>
+								Download
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</section>
+
+		<section class="download-notice">
+			<p>
+				<strong>Note:</strong> This is a static site. To download all files at once, you can use a download manager or run:
+			</p>
+			<pre><code class="wget-code" data-collection-id={collection.id}>wget -r -np -nH --cut-dirs=1 -R "index.html*" {baseUrl}/sounds/{collection.id}/</code></pre>
+			<p>or</p>
+			<pre><code class="curl-code" data-collection-id={collection.id}>curl -O {baseUrl}/sounds/{collection.id}/*.mp3</code></pre>
+		</section>
+
+		<script is:inline>
+			const baseUrl = window.location.origin;
+			document.querySelectorAll('.wget-code, .curl-code').forEach(el => {
+				const collectionId = el.dataset.collectionId;
+				if (el.classList.contains('wget-code')) {
+					el.textContent = `wget -r -np -nH --cut-dirs=1 -R "index.html*" ${baseUrl}/sounds/${encodeURIComponent(collectionId)}/`;
+				} else {
+					el.textContent = `curl -O ${baseUrl}/sounds/${encodeURIComponent(collectionId)}/*.mp3`;
+				}
+			});
+		</script>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<style>
+	main {
+		max-width: 900px;
+		margin: 0 auto;
+		padding: 0 1.5rem 3rem;
+	}
+
+	.page-title {
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		color: var(--color-accent);
+		margin-bottom: 0.5rem;
+		padding-top: 0.5rem;
+		font-weight: 600;
+	}
+
+	.breadcrumb {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 0;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+	}
+
+	.breadcrumb a {
+		color: var(--color-text-muted);
+		transition: color 0.2s;
+	}
+
+	.breadcrumb a:hover {
+		color: var(--color-accent);
+	}
+
+	.separator {
+		color: var(--color-text-muted);
+	}
+
+	.current {
+		color: var(--color-text);
+	}
+
+	.download-header {
+		margin-bottom: 1.5rem;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.collection-description {
+		color: var(--color-text-muted);
+		font-size: 0.9375rem;
+	}
+
+	.total-size {
+		color: var(--color-text-muted);
+		font-size: 0.8125rem;
+		margin-top: 0.25rem;
+	}
+
+	.list-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1rem;
+	}
+
+	.list-title {
+		font-family: var(--font-display);
+		font-size: 1.125rem;
+		color: var(--color-text);
+		font-weight: 500;
+	}
+
+	.list-count {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.file-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.file-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem;
+		background: var(--color-bg-secondary);
+		border: 1px solid var(--color-border);
+		margin-bottom: 0.5rem;
+	}
+
+	.file-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.file-name {
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		color: var(--color-text);
+		word-break: break-all;
+	}
+
+	.file-size {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		padding: 0.5rem 0.75rem;
+		font-family: var(--font-display);
+		font-size: 0.875rem;
+		border: 1px solid;
+		transition: all 0.15s;
+		text-decoration: none;
+	}
+
+	.btn svg {
+		width: 14px;
+		height: 14px;
+	}
+
+	.btn-secondary {
+		background: transparent;
+		color: var(--color-text);
+		border-color: var(--color-border);
+	}
+
+	.btn-secondary:hover {
+		background: var(--color-bg);
+		border-color: var(--color-accent);
+		color: var(--color-accent);
+	}
+
+	.download-notice {
+		margin-top: 2rem;
+		padding: 1.5rem;
+		background: var(--color-bg-secondary);
+		border: 1px dashed var(--color-border);
+	}
+
+	.download-notice p {
+		color: var(--color-text-muted);
+		font-size: 0.875rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.download-notice pre {
+		background: var(--color-bg);
+		padding: 0.75rem;
+		border-radius: 4px;
+		overflow-x: auto;
+		margin: 0.5rem 0;
+	}
+
+	.download-notice code {
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-accent);
+	}
+
+	@media (max-width: 640px) {
+		.file-item {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.75rem;
+		}
+
+		.btn {
+			width: 100%;
+			justify-content: center;
+		}
+	}
+</style>
