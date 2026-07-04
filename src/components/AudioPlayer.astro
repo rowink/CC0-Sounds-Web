@@ -265,7 +265,7 @@ const { id, name, src } = Astro.props;
     downloadBtn?.addEventListener('click', () => {
       const a = document.createElement('a');
       a.href = src;
-      a.download = name;
+      a.download = src.split('/').pop();
       a.target = '_blank';
       document.body.appendChild(a);
       a.click();

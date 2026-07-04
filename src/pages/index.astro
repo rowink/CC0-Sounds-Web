@@ -58,6 +58,12 @@ const totalSounds = collections.reduce((sum, c) => sum + c.count, 0);
 				<div class="search-box">
 					<Search size={18} />
 					<input type="text" id="global-search" placeholder="Loading search index..." autocomplete="off" />
+					<button class="search-clear" id="search-clear" aria-label="Clear search" hidden>
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+							<line x1="18" y1="6" x2="6" y2="18"/>
+							<line x1="6" y1="6" x2="18" y2="18"/>
+						</svg>
+					</button>
 					<div class="search-loader" id="search-loader"></div>
 				</div>
 
@@ -104,6 +110,7 @@ const totalSounds = collections.reduce((sum, c) => sum + c.count, 0);
 <script>
 	const searchInput = document.getElementById("global-search");
 	const searchLoader = document.getElementById("search-loader");
+	const searchClear = document.getElementById("search-clear");
 	const collectionGrid = document.getElementById("collection-grid");
 	const searchResults = document.getElementById("search-results");
 	const searchResultsList = document.getElementById("search-results-list");
@@ -258,7 +265,7 @@ const totalSounds = collections.reduce((sum, c) => sum + c.count, 0);
 		downloadBtn?.addEventListener("click", () => {
 			const a = document.createElement("a");
 			a.href = src;
-			a.download = name;
+			a.download = src.split('/').pop();
 			a.target = "_blank";
 			document.body.appendChild(a);
 			a.click();
@@ -296,11 +303,27 @@ const totalSounds = collections.reduce((sum, c) => sum + c.count, 0);
 	// Store pending query for replay once index loads
 	let pendingQuery = "";
 
+	function updateClearButton() {
+		if (searchInput.value) {
+			searchClear.hidden = false;
+		} else {
+			searchClear.hidden = true;
+		}
+	}
+
 	searchInput?.addEventListener("input", (e) => {
 		pendingQuery = e.target.value;
+		updateClearButton();
 		if (searchReady) {
 			performSearch(pendingQuery);
 		}
+	});
+
+	searchClear?.addEventListener("click", () => {
+		searchInput.value = "";
+		searchInput.focus();
+		updateClearButton();
+		performSearch("");
 	});
 
 </script>
@@ -368,6 +391,28 @@ const totalSounds = collections.reduce((sum, c) => sum + c.count, 0);
 
 	.search-box input::placeholder {
 		color: var(--color-text-muted);
+	}
+
+	.search-clear {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: none;
+		border: none;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		padding: 0;
+		width: 18px;
+		height: 18px;
+		flex-shrink: 0;
+	}
+
+	.search-clear:hover {
+		color: var(--color-text);
+	}
+
+	.search-clear[hidden] {
+		display: none;
 	}
 
 	.search-loader {
@@ -653,6 +698,17 @@ const totalSounds = collections.reduce((sum, c) => sum + c.count, 0);
 
 		.collection-grid {
 			grid-template-columns: 1fr;
+		}
+
+		:global(.audio-player .filename) {
+			white-space: normal;
+			overflow: visible;
+			text-overflow: clip;
+			word-break: break-all;
+		}
+
+		:global(.audio-player) {
+			max-width: 100%;
 		}
 	}
 </style>
