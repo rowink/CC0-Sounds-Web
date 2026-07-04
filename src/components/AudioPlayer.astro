@@ -37,7 +37,7 @@ const { id, name, src } = Astro.props;
   </div>
 </div>
 
-<style>
+<style is:global>
   .audio-player {
     display: flex;
     flex-direction: column;
@@ -251,6 +251,7 @@ const { id, name, src } = Astro.props;
       if (currentTimeEl) {
         currentTimeEl.textContent = '0:00';
       }
+      player.dispatchEvent(new CustomEvent('audio-ended', { bubbles: true }));
     });
     
     playBtn?.addEventListener('click', togglePlay);

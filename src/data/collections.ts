@@ -32,6 +32,7 @@ export const collections: Collection[] = [
   { id: 'bb-smol-mechanisms-may-2021', name: 'bb Smol Mechanisms (May 2021)', count: 37 },
   { id: 'bb-toolbox-rummaging-sept-2021', name: 'bb Toolbox Rummaging (Sept 2021)', count: 28 },
   { id: 'beast_or_animal', name: 'beast or animal', count: 7 },
+  { id: 'essentials_series_nox_sound', name: 'Essentials Series NOX SOUND', count: 1644 },
   { id: 'kenney_casinoaudio', name: 'kenney casinoaudio', count: 55 },
   { id: 'kenney_digitalaudio', name: 'kenney digitalaudio', count: 63 },
   { id: 'kenney_impactsounds', name: 'kenney impactsounds', count: 130 },
