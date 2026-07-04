@@ -34,6 +34,7 @@ export const collections: Collection[] = [
   { id: 'beast_or_animal', name: 'beast or animal', count: 7 },
   { id: 'essentials_series_nox_sound', name: 'Essentials Series NOX SOUND', count: 1644 },
   { id: 'freesfx', name: 'FreeSFX', count: 222 },
+  { id: 'inteface_sfx_pack_1_wav', name: 'inteface sfx pack 1 wav', count: 222 },
   { id: 'kenney_casinoaudio', name: 'kenney casinoaudio', count: 55 },
   { id: 'kenney_digitalaudio', name: 'kenney digitalaudio', count: 63 },
   { id: 'kenney_impactsounds', name: 'kenney impactsounds', count: 130 },

@@ -99,6 +99,45 @@ function generateTypeScript(collections) {
   return lines.join('\n');
 }
 
+/**
+ * Generate a search index JSON file (public/search-index.json)
+ * containing all audio file entries with compact field names
+ * to minimize file size: { n: "filename_without_ext", s: "/sounds/.../file.wav" }
+ */
+const SEARCH_INDEX_FILE = path.join(__dirname, '..', 'public', 'search-index.json');
+
+function generateSearchIndex() {
+  console.log('Generating search index...');
+
+  const searchIndex = [];
+
+  function scanFiles(dir) {
+    let items;
+    try {
+      items = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const item of items) {
+      const fullPath = path.join(dir, item.name);
+      if (item.isDirectory()) {
+        scanFiles(fullPath);
+      } else if (item.isFile() && isAudioFile(item.name)) {
+        const relativePath = path.relative(SOUNDS_DIR, fullPath);
+        const urlPath = '/sounds/' + relativePath.split(path.sep).join('/');
+        const name = path.parse(item.name).name;
+        searchIndex.push({ n: name, s: urlPath });
+      }
+    }
+  }
+
+  scanFiles(SOUNDS_DIR);
+  fs.writeFileSync(SEARCH_INDEX_FILE, JSON.stringify(searchIndex), 'utf-8');
+
+  const sizeKb = (Buffer.byteLength(JSON.stringify(searchIndex), 'utf-8') / 1024).toFixed(1);
+  console.log(`Search index written to ${SEARCH_INDEX_FILE} (${searchIndex.length} entries, ${sizeKb} KB)`);
+}
+
 function main() {
   console.log('Scanning audio files...');
 
@@ -110,6 +149,8 @@ function main() {
   fs.writeFileSync(OUTPUT_FILE, content, 'utf-8');
 
   console.log(`Written to ${OUTPUT_FILE}`);
+
+  generateSearchIndex();
 }
 
 main();

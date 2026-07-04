@@ -9,11 +9,6 @@ import { Search } from "lucide-astro";
 const allAudioFiles = Object.entries(import.meta.glob("/public/sounds/**/*.{ogg,mp3,wav}", { eager: true }));
 
 // Build a map of collection ID -> file count and files
-interface AudioFile {
-	name: string;
-	src: string;
-}
-
 interface CollectionData {
 	id: string;
 	name: string;
@@ -22,7 +17,6 @@ interface CollectionData {
 }
 
 const collectionsMap: Record<string, CollectionData> = {};
-const allAudioFilesList: AudioFile[] = [];
 
 for (const [path] of allAudioFiles) {
 	// Path format: /public/sounds/{collection-id}/{subfolder/}filename.ext
@@ -32,12 +26,6 @@ for (const [path] of allAudioFiles) {
 		const filename = parts[parts.length - 1];
 
 		if (!filename.match(/\.(ogg|mp3|wav)$/i)) continue;
-
-		// Add to all files list for search
-		allAudioFilesList.push({
-			name: filename.replace(/\.(ogg|mp3|wav)$/i, ""),
-			src: `/sounds/${collectionId}/${filename}`,
-		});
 
 		if (!collectionsMap[collectionId]) {
 			collectionsMap[collectionId] = {
@@ -55,9 +43,8 @@ for (const [path] of allAudioFiles) {
 const collections = Object.values(collectionsMap).sort((a, b) => a.name.localeCompare(b.name));
 const totalSounds = collections.reduce((sum, c) => sum + c.count, 0);
 
-// Serialize audio files for client-side search
-const audioFilesJson = JSON.stringify(allAudioFilesList.slice(0, 500)); // Limit for performance
 ---
+
 
 <BaseLayout title="Home">
 	<Header />
@@ -70,7 +57,8 @@ const audioFilesJson = JSON.stringify(allAudioFilesList.slice(0, 500)); // Limit
 
 				<div class="search-box">
 					<Search size={18} />
-					<input type="text" id="global-search" placeholder="Search sounds..." autocomplete="off" />
+					<input type="text" id="global-search" placeholder="Loading search index..." autocomplete="off" />
+					<div class="search-loader" id="search-loader"></div>
 				</div>
 
 				<div class="hero-stats">
@@ -113,13 +101,32 @@ const audioFilesJson = JSON.stringify(allAudioFilesList.slice(0, 500)); // Limit
 	<Footer />
 </BaseLayout>
 
-<script define:vars={{ audioFilesJson }}>
-	const audioFiles = JSON.parse(audioFilesJson);
+<script>
 	const searchInput = document.getElementById("global-search");
+	const searchLoader = document.getElementById("search-loader");
 	const collectionGrid = document.getElementById("collection-grid");
 	const searchResults = document.getElementById("search-results");
 	const searchResultsList = document.getElementById("search-results-list");
 	const searchResultsCount = document.getElementById("search-results-count");
+
+	let audioFiles = [];
+	let searchReady = false;
+
+	// Load search index asynchronously at build time
+	fetch("/search-index.json")
+		.then((r) => r.json())
+		.then((data) => {
+			audioFiles = data;
+			searchReady = true;
+			searchInput.placeholder = "Search sounds...";
+			if (searchLoader) searchLoader.style.display = "none";
+			// Replay any search typed while loading
+			if (pendingQuery) performSearch(pendingQuery);
+		})
+		.catch(() => {
+			searchInput.placeholder = "Search unavailable";
+			if (searchLoader) searchLoader.style.display = "none";
+		});
 
 	let currentAudio = null;
 
@@ -127,11 +134,11 @@ const audioFilesJson = JSON.stringify(allAudioFilesList.slice(0, 500)); // Limit
 		const div = document.createElement("div");
 		div.className = "audio-player";
 		div.dataset.id = "search-" + index;
-		div.dataset.src = file.src;
-		div.dataset.name = file.name;
+		div.dataset.src = file.s;
+		div.dataset.name = file.n;
 
 		div.innerHTML = `
-      <div class="filename">${file.name}</div>
+      <div class="filename">${file.n}</div>
       <div class="player-controls">
         <button class="play-btn" aria-label="Play">
           <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -260,14 +267,14 @@ const audioFilesJson = JSON.stringify(allAudioFilesList.slice(0, 500)); // Limit
 	}
 
 	function performSearch(query) {
-		if (!query.trim()) {
+		if (!query.trim() || !searchReady) {
 			collectionGrid.style.display = "grid";
 			searchResults.style.display = "none";
 			return;
 		}
 
 		const lowerQuery = query.toLowerCase();
-		const results = audioFiles.filter((file) => file.name.toLowerCase().includes(lowerQuery)).slice(0, 50);
+		const results = audioFiles.filter((file) => file.n.toLowerCase().includes(lowerQuery)).slice(0, 50);
 
 		if (results.length === 0) {
 			searchResultsList.innerHTML = '<p class="no-results">No sounds found</p>';
@@ -286,9 +293,16 @@ const audioFilesJson = JSON.stringify(allAudioFilesList.slice(0, 500)); // Limit
 		searchResults.style.display = "block";
 	}
 
+	// Store pending query for replay once index loads
+	let pendingQuery = "";
+
 	searchInput?.addEventListener("input", (e) => {
-		performSearch(e.target.value);
+		pendingQuery = e.target.value;
+		if (searchReady) {
+			performSearch(pendingQuery);
+		}
 	});
+
 </script>
 
 <style>
@@ -354,6 +368,20 @@ const audioFilesJson = JSON.stringify(allAudioFilesList.slice(0, 500)); // Limit
 
 	.search-box input::placeholder {
 		color: var(--color-text-muted);
+	}
+
+	.search-loader {
+		width: 14px;
+		height: 14px;
+		border: 2px solid var(--color-border);
+		border-top-color: var(--color-accent);
+		border-radius: 50%;
+		animation: search-spin 0.6s linear infinite;
+		flex-shrink: 0;
+	}
+
+	@keyframes search-spin {
+		to { transform: rotate(360deg); }
 	}
 
 	.hero-stats {
