@@ -33,6 +33,7 @@ export const collections: Collection[] = [
   { id: 'bb-toolbox-rummaging-sept-2021', name: 'bb Toolbox Rummaging (Sept 2021)', count: 28 },
   { id: 'beast_or_animal', name: 'beast or animal', count: 7 },
   { id: 'essentials_series_nox_sound', name: 'Essentials Series NOX SOUND', count: 1644 },
+  { id: 'free-audio-asset-collection', name: 'Free Audio Asset Collection', count: 30 },
   { id: 'freesfx', name: 'FreeSFX', count: 222 },
   { id: 'inteface_sfx_pack_1_wav', name: 'inteface sfx pack 1 wav', count: 222 },
   { id: 'kenney_casinoaudio', name: 'kenney casinoaudio', count: 55 },
