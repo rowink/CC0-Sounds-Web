@@ -32,8 +32,9 @@ export const collections: Collection[] = [
   { id: 'bb-smol-mechanisms-may-2021', name: 'bb Smol Mechanisms (May 2021)', count: 37 },
   { id: 'bb-toolbox-rummaging-sept-2021', name: 'bb Toolbox Rummaging (Sept 2021)', count: 28 },
   { id: 'beast_or_animal', name: 'beast or animal', count: 7 },
+  { id: 'chaos', name: 'CHAOS', count: 10 },
+  { id: 'chaos-a-collection-of-music', name: 'CHAOS a collection of music', count: 10 },
   { id: 'essentials_series_nox_sound', name: 'Essentials Series NOX SOUND', count: 1644 },
-  { id: 'free-audio-asset-collection', name: 'Free Audio Asset Collection', count: 30 },
   { id: 'freesfx', name: 'FreeSFX', count: 222 },
   { id: 'inteface_sfx_pack_1_wav', name: 'inteface sfx pack 1 wav', count: 222 },
   { id: 'kenney_casinoaudio', name: 'kenney casinoaudio', count: 55 },
@@ -60,6 +61,7 @@ export const collections: Collection[] = [
   { id: 'micro-pack-small-can', name: 'Micro Pack Small Can', count: 21 },
   { id: 'misslavs-sounds', name: 'MissLavs Sounds', count: 8 },
   { id: 'mmretroarcadesoundspack1_0_5', name: 'MMRetroArcadeSoundsPack1 0 5', count: 1024 },
+  { id: 'piano-pack', name: 'Piano Pack', count: 10 },
   { id: 'sci-fi-sounds', name: 'sci fi sounds', count: 73 },
   { id: 'warfork-cc0', name: 'warfork cc0', count: 359 },
 ];
