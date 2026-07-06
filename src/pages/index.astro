@@ -144,8 +144,9 @@ const totalSounds = collections.reduce((sum, c) => sum + c.count, 0);
 		div.dataset.src = file.s;
 		div.dataset.name = file.n;
 
+		const displayPath = file.s.replace('/sounds/', '');
 		div.innerHTML = `
-      <div class="filename">${file.n}</div>
+      <div class="filename" title="${displayPath}">${displayPath}</div>
       <div class="player-controls">
         <button class="play-btn" aria-label="Play">
           <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -281,7 +282,11 @@ const totalSounds = collections.reduce((sum, c) => sum + c.count, 0);
 		}
 
 		const lowerQuery = query.toLowerCase();
-		const results = audioFiles.filter((file) => file.n.toLowerCase().includes(lowerQuery)).slice(0, 50);
+		const results = audioFiles.filter((file) => {
+			const nameMatch = file.n.toLowerCase().includes(lowerQuery);
+			const pathMatch = file.s.toLowerCase().includes(lowerQuery);
+			return nameMatch || pathMatch;
+		}).slice(0, 50);
 
 		if (results.length === 0) {
 			searchResultsList.innerHTML = '<p class="no-results">No sounds found</p>';
@@ -553,9 +558,8 @@ const totalSounds = collections.reduce((sum, c) => sum + c.count, 0);
 		font-family: var(--font-mono);
 		font-size: 0.8125rem;
 		color: var(--color-text);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
+		white-space: normal;
+		word-break: break-all;
 	}
 
 	:global(.audio-player .player-controls) {
